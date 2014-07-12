@@ -21,14 +21,7 @@ Pusher v.3 Test Engine
 
 1\. Clone the repository.
 
-2\. For now we are not released IronMQ v.3 Ruby gem, so, open `Gemfile`
-and edit path of `iron_mq` gem like that:
-
-```ruby
-gem 'iron_mq', path: '/path/to/iron_mq/v3/repository'
-```
-
-Now, run `bundle install`.
+2\. Run `bundle install`.
 
 3\. Edit `iron.json` and fill right credentials, server address, etc.
 
