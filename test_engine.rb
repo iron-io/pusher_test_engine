@@ -145,7 +145,7 @@ class TestEngine
     subscriber_names = find_min_wait_keys(waits)
 
     wait = 0; subs_codes = {}
-    subscriber_names.each_with_object([]) do |sname|
+    subscriber_names.each do |sname|
       data = waits.delete(sname)
       wait = data['wait']
       subs_codes[sname] = data['code']
@@ -167,7 +167,7 @@ class TestEngine
         subscribers << name
         min_wait = data['wait']
       elsif min_wait > data['wait']
-        subscriber_name = [ name ]
+        subscribers = [ name ]
         min_wait = data['wait']
       end
     end
@@ -180,11 +180,13 @@ class TestEngine
   end
 
   def check_push_statuses(msg_id, push_statuses, subscribers_codes)
-    push_statuses.each do |ps|
-      subscribers_codes.each do |sname, scode|
+    subscribers_codes.each do |sname, scode|
+      info = "Message ID: #{msg_id}, subscriber: #{sname}"
+      code_found = false
+      push_statuses.each do |ps|
         next unless ps['subscriber_name'] == sname
+        code_found = true
 
-        info = "Message ID: #{msg_id}, subscriber: #{sname}"
         if scode == ps['status_code'].to_i
           puts "#{info} -- PASSED".green
         else
@@ -194,6 +196,10 @@ class TestEngine
             puts "#{info} -- FAILED".red
           end
         end
+      end
+
+      unless code_found
+        puts "#{info} -- FAILED".red + ' (push status not found)'.yellow
       end
     end
   end
@@ -214,9 +220,6 @@ class TestEngine
     # NOTE: increase this delay in the case internet connection
     #       between IronMQ and test server is slow, or
     #       you run at least one of them on weak, maybe single core, system.
-    # FIXME: this could be eliminated with more intellingent status waiting,
-    #        which caches previous successfull answer from IMQ based on
-    #        retries count logic.
     sleep 1
 
     until waits.empty?
@@ -236,7 +239,7 @@ class TestEngine
 
   def get_push_statuses(message_id)
     push_statuses = []
-    retries = 2
+    retries = 3
     while retries > 0 do
       msg = @test_queue.get_message(message_id)
       push_statuses = msg.push_statuses
