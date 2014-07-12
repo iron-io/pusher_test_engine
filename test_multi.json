@@ -5,7 +5,7 @@
     "comment": "Two subscribers which return HTTP 200 and 404 codes.",
 
     "configuration": {
-      "messages_count": 2,
+      "messages_count": 1,
       "sample_message": {
         "body": "Test message"
       }
@@ -14,7 +14,7 @@
       "name": "test_multi_001",
       "type": "multicast",
       "push": {
-        "retries": 1,
+        "retries": 0,
         "retries_delay": 5
       }
     },
@@ -23,8 +23,7 @@
         "code": 200
       },
       "sub_http_404": {
-        "code": 404,
-        "delay": 2
+        "code": 404
       }
     }
   },
@@ -33,7 +32,7 @@
     "comment": "One subscriber which returns HTTP 200 codes.",
 
     "configuration": {
-      "messages_count": 2,
+      "messages_count": 1,
       "sample_message": {
         "body": "Test message"
       }
@@ -48,7 +47,8 @@
     },
     "subscribers": {
       "sub_http_200": {
-        "code": 200
+        "code": 200,
+        "delay": 2
       }
     }
   },
@@ -78,8 +78,7 @@
         "code": 301
       },
       "sub_http_404": {
-        "code": 404,
-        "delay": 2
+        "code": 404
       }
     }
   }

@@ -14,7 +14,7 @@
       "name": "test_uni_001",
       "type": "unicast",
       "push": {
-        "retries": 2,
+        "retries": 1,
         "retries_delay": 5
       }
     },
@@ -46,14 +46,14 @@
       }
     },
     "subscribers": {
-        "sub_http_404": {
+      "sub_http_404": {
         "code": 404
       }
     }
   },
 
   "Test unicast #003": {
-    "comment": "5 subscribers, only one of them returns HTTP 200.",
+    "comment": "4 subscribers, only one of them returns HTTP 200.",
 
     "configuration": {
       "messages_count": 1,
@@ -81,9 +81,6 @@
       },
       "sub_http_401": {
         "code": 401
-      },
-      "sub_http_402": {
-        "code": 402
       }
     }
   }
