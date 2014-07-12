@@ -44,3 +44,7 @@ Run tests:
 ```sh
 $ ruby run_tests.rb
 ```
+
+### Architecture documentation
+
+See on [Google Drive](https://docs.google.com/a/iron.io/document/d/1EZnvm-dJQlid9vv7QaDp6Ajo29sQyYnsI6bqEToOnY8).
