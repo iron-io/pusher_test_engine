@@ -17,6 +17,8 @@ Pusher v.3 Test Engine
 
 * `test_multi.json` - contains tests for multicast push queues
 
+* `test_uni.json` - contains tests for unicast push queues
+
 ### Installation and Configuration
 
 1\. Clone the repository.
