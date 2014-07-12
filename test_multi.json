@@ -1,0 +1,86 @@
+{
+  "comment": "Test multicast queues.",
+
+  "Test multicast #001": {
+    "comment": "Two subscribers which return HTTP 200 and 404 codes.",
+
+    "configuration": {
+      "messages_count": 2,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_multi_001",
+      "type": "multicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_200": {
+        "code": 200
+      },
+      "sub_http_404": {
+        "code": 404,
+        "delay": 2
+      }
+    }
+  },
+
+  "Test multicast #002": {
+    "comment": "One subscriber which returns HTTP 200 codes.",
+
+    "configuration": {
+      "messages_count": 2,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_multi_002",
+      "type": "multicast",
+      "push": {
+        "retries": 3,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_200": {
+        "code": 200
+      }
+    }
+  },
+
+  "Test multicast #003": {
+    "comment": "Three subscribers which return HTTP 200, 301, and 404 codes.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_multi_003",
+      "type": "multicast",
+      "push": {
+        "retries": 0,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_200": {
+        "code": 200
+      },
+      "sub_http_301": {
+        "code": 301
+      },
+      "sub_http_404": {
+        "code": 404,
+        "delay": 2
+      }
+    }
+  }
+}

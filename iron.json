@@ -1,0 +1,8 @@
+{
+  "project_id": "IRON_MQ_PROJECT_ID",
+  "token": "IRON_MQ_TOKEN",
+  "scheme": "http",
+  "host": "localhost",
+  "port": 8080,
+  "api_version": 3
+}

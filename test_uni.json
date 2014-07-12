@@ -1,0 +1,90 @@
+{
+  "comment": "Test unicast queues.",
+
+  "Test unicast #001": {
+    "comment": "Two subscribers which return HTTP 200 and 404 codes.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_001",
+      "type": "unicast",
+      "push": {
+        "retries": 2,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_200": {
+        "code": 200
+      },
+      "sub_http_404": {
+        "code": 404
+      }
+    }
+  },
+
+  "Test unicast #002": {
+    "comment": "Only one subscribers which returns HTTP 404 codes.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_002",
+      "type": "unicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+        "sub_http_404": {
+        "code": 404
+      }
+    }
+  },
+
+  "Test unicast #003": {
+    "comment": "5 subscribers, only one of them returns HTTP 200.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_003",
+      "type": "unicast",
+      "push": {
+        "retries": 0,
+        "retries_delay": 7
+      }
+    },
+    "subscribers": {
+      "sub_http_301": {
+        "code": 301
+      },
+      "sub_http_302": {
+        "code": 302
+      },
+      "sub_http_200": {
+        "code": 200
+      },
+      "sub_http_401": {
+        "code": 401
+      },
+      "sub_http_402": {
+        "code": 402
+      }
+    }
+  }
+}
