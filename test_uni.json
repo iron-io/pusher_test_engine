@@ -42,7 +42,8 @@
       "type": "unicast",
       "push": {
         "retries": 1,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_uni_002_errors"
       }
     },
     "subscribers": {

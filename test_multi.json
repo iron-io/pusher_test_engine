@@ -15,7 +15,8 @@
       "type": "multicast",
       "push": {
         "retries": 0,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_multi_001_errors"
       }
     },
     "subscribers": {
@@ -42,7 +43,8 @@
       "type": "multicast",
       "push": {
         "retries": 3,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_multi_002_errors"
       }
     },
     "subscribers": {
@@ -67,7 +69,8 @@
       "type": "multicast",
       "push": {
         "retries": 0,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_multi_003_errors"
       }
     },
     "subscribers": {

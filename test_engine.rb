@@ -2,6 +2,7 @@ require 'iron_mq'
 require 'colorize'
 
 class TestEngine
+
   def initialize(config_file = 'test_engine.json')
     raise 'Configuration file is not provided.' if nil_or_empty?(config_file)
 
@@ -17,7 +18,9 @@ class TestEngine
     # IronMQ configuration must be placed in
     # iron.json file in the same directory
     @imq = IronMQ::Client.new
+
     @test_queue = nil
+    @test_conf = {}
   end
 
   def test(params = {})
@@ -49,6 +52,8 @@ class TestEngine
 
       test(data)
     end
+
+    nil
   end
 
   private
@@ -94,12 +99,20 @@ class TestEngine
 
     raise 'Queue type is not set.' if nil_or_empty?(params['type'])
 
-    params['push'] ||= {} # IronMQ has default params for all except subscribers
+    # IronMQ has default params for all except subscribers
     raise 'Queue subscribers config is absent.' if nil_or_empty?(subscribers)
+    params['push'] ||= {}
     params['push']['subscribers'] = make_subscribers(subscribers)
 
     @test_queue = @imq.queue(queue_name)
-    @test_queue.delete_queue # clear queue, its configuration, etc.
+    # clear queue, its configuration, etc.
+    @test_queue.delete_queue
+    # delete push error queue
+    unless nil_or_empty?(params['push']['error_queue'])
+      pq = @imq.queue(params['push']['error_queue'])
+      pq.delete_queue
+    end
+
     resp = @test_queue.update_queue({ queue: params })
 
     @test_queue
@@ -125,6 +138,7 @@ class TestEngine
     wait = 0
     # get retries delay from queue info
     retries_delay = @test_queue.push_info['retries_delay'].to_i
+    retries = @test_queue.push_info['retries'].to_i
     # delay is 0 if it is not set
     delay = params['delay'].to_i
     # return requested code on first try by default
@@ -133,11 +147,11 @@ class TestEngine
 
     case params['code'].to_i
     when 200
-      delay # must be acknowledged after first subscriber response
+      delay * on_try + retries_delay * (on_try - 1)
     when 202
       raise 'NOT IMPLEMENTED.'
     else
-      delay * on_try + retries_delay * (on_try - 1)
+      delay * (retries + 1) + retries_delay * retries
     end
   end
 
@@ -220,7 +234,10 @@ class TestEngine
     # NOTE: increase this delay in the case internet connection
     #       between IronMQ and test server is slow, or
     #       you run at least one of them on weak, maybe single core, system.
-    sleep 1
+    #
+    #       Another possible good solution is
+    #       to add more pusher's queues brokers in the IronMQ config.
+    sleep 2
 
     until waits.empty?
       subs_codes = wait_next(waits)
@@ -235,6 +252,8 @@ class TestEngine
         end
       end
     end
+
+    check_error_queue(subscribers)
   end
 
   def get_push_statuses(message_id)
@@ -250,6 +269,57 @@ class TestEngine
     end
 
     push_statuses
+  end
+
+  def check_error_queue(subscribers)
+    error_queue_name = @test_queue.push_info['error_queue']
+    return if nil_or_empty?(error_queue_name)
+    sleep 1 # wait for putting messages to error queue
+
+    num_error_msgs = calculate_number_of_error_messages(subscribers)
+    error_queue = @imq.queue(error_queue_name)
+    begin
+      qinfo = error_queue.info
+      total_msgs = qinfo['total_messages']
+      info = "Queue #{qinfo['name']} has #{total_msgs}" \
+              " of expected #{num_error_msgs} messages"
+      if total_msgs == num_error_msgs
+        puts "#{info} -- PASSED".green
+      else
+        puts "#{info} -- FAILED".red
+      end
+    rescue Rest::HttpError
+      info = "Error queue does not exist. Expected #{num_error_msgs} messages"
+      if num_error_msgs == 0
+        puts "#{info} -- PASSED".green
+      else
+        puts "#{info} -- FAILED".red
+      end
+    end
+  end
+
+  def calculate_number_of_error_messages(subs)
+    num_msgs = 0
+
+    case @test_queue.type
+    when 'multicast'
+      subs.each { |_, s| num_msgs += 1 unless subscriber_must_be_pushed(s) }
+    when 'unicast'
+      one_sub_pushed = false
+      subs.each { |_, s| one_sub_pushed ||= subscriber_must_be_pushed(s) }
+      num_msgs = 1 unless one_sub_pushed
+    end
+
+    num_msgs
+  end
+
+  def subscriber_must_be_pushed(sub)
+    must_be_pushed = sub['code'] == 200
+    must_be_pushed ||=
+      sub['code'] == 202 && sub['acknowledge'].to_i == 1 &&
+      @test_queue.push_info['retries_delay'] > sub['acknowledge_delay'].to_i
+
+    must_be_pushed
   end
 
 end

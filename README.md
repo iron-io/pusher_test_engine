@@ -36,13 +36,13 @@ IronMQ has access to test server through base URL.
 Launch test server:
 
 ```sh
-$ ruby server.rb
+$ bundle exec ruby server.rb
 ```
 
 Run tests:
 
 ```sh
-$ ruby run_tests.rb
+$ bundle exec ruby run_tests.rb
 ```
 
 ### Architecture documentation
