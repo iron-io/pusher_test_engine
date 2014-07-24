@@ -214,7 +214,8 @@ class TestEngine
       wait['wait'] = delay * on_try + retries_delay * (on_try - 1)
     when 202
       if subscriber_must_be_pushed(params)
-        wait['code'] = 200 # wait while message will be acknowledged
+        wait['code'] = 200
+        # wait while message will be acknowledged
         wait['wait'] = delay * on_try +
                        retries_delay * (on_try - 1) +
                        params['acknowledge_delay'].to_i
