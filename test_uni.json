@@ -20,7 +20,8 @@
     },
     "subscribers": {
       "sub_http_200": {
-        "code": 200
+        "code": 200,
+        "delay": 2
       },
       "sub_http_404": {
         "code": 404
@@ -79,6 +80,93 @@
       },
       "sub_http_200": {
         "code": 200
+      },
+      "sub_http_401": {
+        "code": 401
+      }
+    }
+  },
+
+  "Test unicast #004": {
+    "comment": "One subscriber which return HTTP 202 and acknowledge in 2 seconds.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_001",
+      "type": "unicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_202": {
+        "code": 202,
+        "delay": 2,
+        "acknowledge": 1,
+        "acknowledge_delay": 2
+      }
+    }
+  },
+
+  "Test unicast #005": {
+    "comment": "3 subscribers, one of they returns HTTP 202 and acknowledge in 2 seconds.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_001",
+      "type": "unicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_202": {
+        "code": 202,
+        "delay": 2,
+        "acknowledge": 1,
+        "acknowledge_delay": 2
+      },
+      "sub_http_302": {
+        "code": 302
+      },
+      "sub_http_401": {
+        "code": 401
+      }
+    }
+  },
+
+  "Test unicast #006": {
+    "comment": "2 subscribers, one of they returns HTTP 202, but not acknowledged.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_uni_001",
+      "type": "unicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5
+      }
+    },
+    "subscribers": {
+      "sub_http_202": {
+        "code": 202
       },
       "sub_http_401": {
         "code": 401

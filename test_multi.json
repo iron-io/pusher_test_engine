@@ -84,5 +84,36 @@
         "code": 404
       }
     }
+  },
+
+  "Test multicast #004": {
+    "comment": "Two subscribers which return HTTP 202, one of them must be acknowledged.",
+
+    "configuration": {
+      "messages_count": 1,
+      "sample_message": {
+        "body": "Test message"
+      }
+    },
+    "queue": {
+      "name": "test_multi_001",
+      "type": "multicast",
+      "push": {
+        "retries": 1,
+        "retries_delay": 5,
+        "error_queue": "test_multi_001_errors"
+      }
+    },
+    "subscribers": {
+      "sub_http_202_acknowledge": {
+        "code": 202,
+        "delay": 2,
+        "acknowledge": 1,
+        "acknowledge_delay": 2
+      },
+      "sub_http_202_no_acknowledge": {
+        "code": 202
+      }
+    }
   }
 }
