@@ -56,7 +56,7 @@ If you see errors while running tests:
 * Test engine or/and server crash (Ruby exceptions or so) -- contact me.
 
 * Some existing test cases are randomly failed: open file `test_engine.rb`, go to line 315.
-(See it on GitHub)[https://github.com/iron-io/pusher_test_engine/blob/master/test_engine.rb#L315].
+[See it on GitHub](https://github.com/iron-io/pusher_test_engine/blob/master/test_engine.rb#L315).
 Set higher sleep interval (see comment in the code for more information).
 
 * Subscribers with `HTTP 202` response code are consistently failed. Check your IronMQ configuration.
