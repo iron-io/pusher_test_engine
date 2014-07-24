@@ -128,14 +128,78 @@ class TestEngine
   end
 
   def calculate_waits_for(subscribers)
-    subscribers.each_with_object({}) do |(name, params), memo|
-      memo[name] = { 'code' => params['code'].to_i,
-                     'wait' => calculate_wait(params) }
+    case @test_queue.type
+    when 'multicast'
+      subscribers.each_with_object({}) do |(name, params), memo|
+        memo[name] = calculate_wait(params)
+      end
+    when 'unicast'
+      uni_sub_params = make_generic_unicast_subscriber_from(subscribers)
+      wp = calculate_wait(uni_sub_params)
+
+      # Now use the same wait for all subscribers
+      subscribers.each_with_object({}) do |(name, params), memo|
+        wait = { 'code' => params['code'], 'wait' => wp['wait'] }
+        # Set wait code to 200 to subscriber with status 202,
+        # but only for one which will be acknowledged.
+        if uni_sub_params['code'] == 202 &&
+           uni_sub_params['subscriber_name'] == name
+          wait['code'] = 200
+        end
+
+        memo[name] = wait
+      end
+    else
+      raise "Wronge queue type #{@test_queue.type}"
     end
   end
 
+  def update_unicast_subscriber(params, code, on_try)
+    if on_try < params['on_try']
+      params['code'] = code
+      params['on_try'] = on_try
+
+      true
+    end # else nil
+  end
+
+  # As unicast queue's subscribers push one by one
+  # waiting time must be the same for all subscribers.
+  # Calculate total delay for all subscribers,
+  # set proper result code, acknowledge and its delay to calculate
+  def make_generic_unicast_subscriber_from(subscribers)
+    uni_prms = {
+      'code' => 503,
+      'delay' => 0,
+      # Assume, that none of subscribers will be pushed
+      'on_try' => @test_queue.push_info['retries'] + 1
+    }
+
+    subscribers.each do |name, params|
+      # Sum delays of all subscribers because we do not know push order
+      uni_prms['delay'] += params['delay'].to_i
+      case params['code'].to_i
+      when 200
+        on_try = (params['on_try'] || 1).to_i
+        update_unicast_subscriber(uni_prms, 200, on_try)
+      when 202
+        # Only if subscriber will be acknowledged.
+        if subscriber_must_be_pushed(params)
+          on_try = (params['on_try'] || 1).to_i
+          if update_unicast_subscriber(uni_prms, 202, on_try)
+            uni_prms['acknowledge'] = 1
+            uni_prms['acknowledge_delay'] = params['acknowledge_delay']
+            uni_prms['subscriber_name'] = name
+          end
+        end
+      end
+    end
+
+    uni_prms
+  end
+
   def calculate_wait(params)
-    wait = 0
+    wait = { 'code' => params['code'].to_i, 'wait' => 0 }
     # get retries delay from queue info
     retries_delay = @test_queue.push_info['retries_delay'].to_i
     retries = @test_queue.push_info['retries'].to_i
@@ -143,16 +207,25 @@ class TestEngine
     delay = params['delay'].to_i
     # return requested code on first try by default
     on_try = (params['on_try'] || 1).to_i
-    fail_code = (params['fail_code'] || 503).to_i
+    #fail_code = (params['fail_code'] || 503).to_i
 
     case params['code'].to_i
     when 200
-      delay * on_try + retries_delay * (on_try - 1)
+      wait['wait'] = delay * on_try + retries_delay * (on_try - 1)
     when 202
-      raise 'NOT IMPLEMENTED.'
+      if subscriber_must_be_pushed(params)
+        wait['code'] = 200 # wait while message will be acknowledged
+        wait['wait'] = delay * on_try +
+                       retries_delay * (on_try - 1) +
+                       params['acknowledge_delay'].to_i
+      else
+        wait['wait'] = delay * (retries + 1) + retries_delay * retries
+      end
     else
-      delay * (retries + 1) + retries_delay * retries
+      wait['wait'] = delay * (retries + 1) + retries_delay * retries
     end
+
+    wait
   end
 
   def wait_next(waits)
@@ -205,9 +278,11 @@ class TestEngine
           puts "#{info} -- PASSED".green
         else
           if ![200, 202].include?(scode) && @test_queue.type == 'unicast'
-            puts "#{info} -- PASSED".green + ' (no push status on unicast subscriber)'.yellow
+            puts "#{info} -- PASSED".green +
+                 ' (no push status on unicast subscriber)'.yellow
           else
-            puts "#{info} -- FAILED".red
+            expect_got = "expect status code #{scode}, got #{ps['status_code']}"
+            puts "#{info} -- FAILED (#{expect_got})".red
           end
         end
       end
@@ -237,7 +312,7 @@ class TestEngine
     #
     #       Another possible good solution is
     #       to add more pusher's queues brokers in the IronMQ config.
-    sleep 2
+    sleep 1
 
     until waits.empty?
       subs_codes = wait_next(waits)
