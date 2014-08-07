@@ -113,7 +113,7 @@ class TestEngine
       pq.delete_queue
     end
 
-    resp = @test_queue.update_queue({ queue: params })
+    resp = @test_queue.update(params)
 
     @test_queue
   end
