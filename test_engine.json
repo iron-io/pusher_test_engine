@@ -1,3 +1,7 @@
 {
-  "base_url": "http://192.168.3.33:4567"
+  "base_url": "http://192.168.3.33:4567",
+  "interactive_comment": "This option enables interactive mode.
+If one of tests fails, engine launches pry (irb replacement),
+where is possible to check variables, get queue info, get messages, etc."
+  "interactive": false
 }

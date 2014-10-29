@@ -1,5 +1,6 @@
 require 'iron_mq'
 require 'colorize'
+require 'pry'
 
 class TestEngine
 
@@ -8,6 +9,7 @@ class TestEngine
 
     conf = load_json_file(config_file)
     @base_url = conf['base_url']
+    @interactive = conf['interactive']
     raise 'Base URL is not set.' if nil_or_empty?(@base_url)
 
     # removes terminal `/` sign(s)
@@ -106,11 +108,19 @@ class TestEngine
 
     @test_queue = @imq.queue(queue_name)
     # clear queue, its configuration, etc.
-    @test_queue.delete_queue
+    begin
+      @test_queue.delete_queue
+    rescue Exception => ex
+      puts "Cannot delete queue: #{ex.message}"
+    end
     # delete push error queue
     unless nil_or_empty?(params['push']['error_queue'])
-      pq = @imq.queue(params['push']['error_queue'])
-      pq.delete_queue
+      errq = @imq.queue(params['push']['error_queue'])
+      begin
+        errq.delete_queue
+      rescue Exception => ex
+        puts "Cannot delete error queue: #{ex.message}"
+      end
     end
 
     resp = @test_queue.update(params)
@@ -277,19 +287,23 @@ class TestEngine
 
         if scode == ps['status_code'].to_i
           puts "#{info} -- PASSED".green
+          next
+        end
+
+        if ![200, 202].include?(scode) && @test_queue.type == 'unicast'
+          puts "#{info} -- PASSED".green +
+               ' (no push status on unicast subscriber)'.yellow
         else
-          if ![200, 202].include?(scode) && @test_queue.type == 'unicast'
-            puts "#{info} -- PASSED".green +
-                 ' (no push status on unicast subscriber)'.yellow
-          else
-            expect_got = "expect status code #{scode}, got #{ps['status_code']}"
-            puts "#{info} -- FAILED (#{expect_got})".red
-          end
+          expect_got = "expect status code #{scode}, got #{ps['status_code']}"
+          puts "#{info} -- FAILED (#{expect_got})".red
+          binding.pry if @interactive
         end
       end
 
-      unless code_found
+      unless code_found ||
+             ![200, 202].include?(scode) && @test_queue.type == 'unicast'
         puts "#{info} -- FAILED".red + ' (push status not found)'.yellow
+        binding.pry if @interactive
       end
     end
   end
@@ -363,6 +377,7 @@ class TestEngine
         puts "#{info} -- PASSED".green
       else
         puts "#{info} -- FAILED".red
+        binding.pry if @interactive
       end
     rescue Rest::HttpError
       info = "Error queue does not exist. Expected #{num_error_msgs} messages"
@@ -370,6 +385,7 @@ class TestEngine
         puts "#{info} -- PASSED".green
       else
         puts "#{info} -- FAILED".red
+        binding.pry if @interactive
       end
     end
   end
