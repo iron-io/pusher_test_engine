@@ -97,7 +97,7 @@
       }
     },
     "queue": {
-      "name": "test_uni_001",
+      "name": "test_uni_004",
       "type": "unicast",
       "push": {
         "retries": 1,
@@ -124,7 +124,7 @@
       }
     },
     "queue": {
-      "name": "test_uni_001",
+      "name": "test_uni_005",
       "type": "unicast",
       "push": {
         "retries": 1,
@@ -157,7 +157,7 @@
       }
     },
     "queue": {
-      "name": "test_uni_001",
+      "name": "test_uni_006",
       "type": "unicast",
       "push": {
         "retries": 1,

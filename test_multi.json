@@ -96,7 +96,7 @@
       }
     },
     "queue": {
-      "name": "test_multi_001",
+      "name": "test_multi_004",
       "type": "multicast",
       "push": {
         "retries": 1,
