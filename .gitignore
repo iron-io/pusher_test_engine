@@ -1,2 +1,6 @@
 .rvmrc
+.ruby-gemset
+.ruby-version
 Gemfile.lock
+
+server.db
