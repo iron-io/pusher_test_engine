@@ -15,7 +15,8 @@
       "type": "unicast",
       "push": {
         "retries": 1,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_uni_001_error"
       }
     },
     "subscribers": {
@@ -68,7 +69,8 @@
       "type": "unicast",
       "push": {
         "retries": 0,
-        "retries_delay": 7
+        "retries_delay": 7,
+        "error_queue": "test_uni_003_error"
       }
     },
     "subscribers": {
@@ -101,7 +103,8 @@
       "type": "unicast",
       "push": {
         "retries": 1,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_uni_004_error"
       }
     },
     "subscribers": {
@@ -128,7 +131,8 @@
       "type": "unicast",
       "push": {
         "retries": 1,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_uni_005_error"
       }
     },
     "subscribers": {
@@ -161,7 +165,8 @@
       "type": "unicast",
       "push": {
         "retries": 1,
-        "retries_delay": 5
+        "retries_delay": 5,
+        "error_queue": "test_uni_006_errors"
       }
     },
     "subscribers": {

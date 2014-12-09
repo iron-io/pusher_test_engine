@@ -165,8 +165,11 @@ class TestEngine
   end
 
   def update_unicast_subscriber(params, code, on_try)
+    if code == 202 && on_try > params['on_try']
+      params['on_try'] = on_try
+    end
+    params['code'] = code
     if on_try < params['on_try']
-      params['code'] = code
       params['on_try'] = on_try
 
       true
@@ -188,19 +191,20 @@ class TestEngine
     subscribers.each do |name, params|
       # Sum delays of all subscribers because we do not know push order
       uni_prms['delay'] += params['delay'].to_i
+      on_try = (params['on_try'] || 1).to_i
       case params['code'].to_i
       when 200
-        on_try = (params['on_try'] || 1).to_i
         update_unicast_subscriber(uni_prms, 200, on_try)
       when 202
         # Only if subscriber will be acknowledged.
         if subscriber_must_be_pushed(params)
-          on_try = (params['on_try'] || 1).to_i
           if update_unicast_subscriber(uni_prms, 202, on_try)
             uni_prms['acknowledge'] = 1
             uni_prms['acknowledge_delay'] = params['acknowledge_delay']
             uni_prms['subscriber_name'] = name
           end
+        else
+          update_unicast_subscriber(uni_prms, 202, on_try + 1)
         end
       end
     end
@@ -230,7 +234,7 @@ class TestEngine
                        retries_delay * (on_try - 1) +
                        params['acknowledge_delay'].to_i
       else
-        wait['wait'] = delay * (retries + 1) + retries_delay * retries
+        wait['wait'] = delay * (retries + 1) + retries_delay * (retries + 1)
       end
     else
       wait['wait'] = delay * (retries + 1) + retries_delay * retries
